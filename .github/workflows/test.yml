@@ -1,0 +1,28 @@
+name: Test ec2-termination-handler-rust
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  AWS_REGION: us-east-1
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_run:
+    workflows: [Build ec2-termination-handler-rust]
+    types:
+      - completed
+
+jobs:
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1.7.0
+      with:
+        role-to-assume: ${{ env.AWS_OIDC_ARN }}
+        role-session-name: GitHub_to_AWS_via_FederatedOIDC
+        aws-region: ${{ env.AWS_REGION }}
+      - name: AWS self tests
+        run: |
+          aws sts get-caller-identity

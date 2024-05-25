@@ -1,8 +1,0 @@
-[Unit]
-Description=EC2 termination handler
-
-[Service]
-ExecStart=/usr/local/bin/ec2-termination-handler-rust
-
-[Install]
-WantedBy=multi-user.target

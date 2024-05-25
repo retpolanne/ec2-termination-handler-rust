@@ -14,19 +14,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script will create a user for github-ci,
+# set up OIDC provider for GitHub,
+# and set up needed permissions for GitHub
+
 export AWS_PAGER=""
 aws sts get-caller-identity || exit 1
 aws iam create-user --user-name github-ci
 
-KEYS_CREATED=$(aws iam list-access-keys --user-name github-ci | jq '.AccessKeyMetadata')
+OIDC_PROVIDER=$(aws iam create-open-id-connect-provider \
+    --url "https://token.actions.githubusercontent.com" \
+    --thumbprint-list "6938fd4d98bab03faadb97b34396831e3780aea1" \
+    --client-id-list 'sts.amazonaws.com' | jq -r '.OpenIDConnectProviderArn')
 
-if [ "$KEYS_CREATED" == "[]" ] ; then
-    AKIA_OUTPUT=$(aws iam create-access-key --user-name github-ci)
+if [ "$OIDC_PROVIDER" != "" ]; then
+    TEMP=$(mktemp)
+    cat <<EOF> "$TEMP"
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "$OIDC_PROVIDER"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:sub": "repo: retpolanne/ec2-termination-handler-rust:ref:refs/heads/*",
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                }
+            }
+        }
+    ]
+}
+EOF
 
-    GEN_AWS_ACCESS_KEY_ID=$(echo $AKIA_OUTPUT | jq -r ".AccessKey.AccessKeyId")
-    GEN_AWS_SECRET_ACCESS_KEY=$(echo $AKIA_OUTPUT | jq -r ".AccessKey.SecretAccessKey")
-    gh secret set AWS_ACCESS_KEY_ID --body "$GEN_AWS_ACCESS_KEY_ID"
-    gh secret set AWS_SECRET_ACCESS_KEY --body "$GEN_AWS_SECRET_ACCESS_KEY"
+    aws iam create-role --role-name GitHubAction-AssumeRoleWithAction --assume-role-policy-document "file://$TEMP"
+    gh variable set AWS_OIDC_ARN --body "$OIDC_PROVIDER"
 fi
-
-aws s3api create-bucket --acl private --bucket retpolanne-ci-bucket
