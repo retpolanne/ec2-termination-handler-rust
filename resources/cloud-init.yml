@@ -1,8 +1,17 @@
 #cloud-config
 
-packages:
-    - python3-pip
-
 runcmd:
-    - [ pip3, install, -U, awscli ]
-    - [ aws, s3, cp, "s3://retpolanne-tmp-bucket/ec2-termination-handler-rust.deb", "/tmp/ec2-termination-handler-rust.deb"]
+    - [ wget, "github.com"]
+
+write_file:
+- content: |
+    [Unit]
+    Description=EC2 termination handler
+
+    [Service]
+    ExecStart=/usr/local/bin/ec2-termination-handler-rust
+
+    [Install]
+    WantedBy=multi-user.target
+  path: /etc/systemd/system/ec2-termination-handler.service
+  permissions: '0755'
