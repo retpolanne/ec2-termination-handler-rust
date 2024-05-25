@@ -23,6 +23,6 @@ jobs:
         role-to-assume: ${{ env.AWS_OIDC_ARN }}
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
         aws-region: ${{ env.AWS_REGION }}
-      - name: AWS self tests
-        run: |
-          aws sts get-caller-identity
+    - name: AWS self tests
+      run: |
+        aws sts get-caller-identity
