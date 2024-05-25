@@ -2,17 +2,15 @@ name: Test ec2-termination-handler-rust
 env:
   GITHUB_TOKEN: ${{ github.token }}
   AWS_REGION: us-east-1
-
+  AWS_OIDC_ARN: ${{ vars.AWS_OIDC_ARN }}
 permissions:
   id-token: write
   contents: read
-
 on:
   workflow_run:
     workflows: [Build ec2-termination-handler-rust]
     types:
       - completed
-
 jobs:
   steps:
     - name: Checkout
