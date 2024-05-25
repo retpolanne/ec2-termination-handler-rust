@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build binary
-        uses: retpolanne/actions-rust-cross@deb-2
+        uses: retpolanne/actions-rust-cross@deb-3
         with:
           command: ${{ matrix.platform.command }}
           target: ${{ matrix.platform.target }}
