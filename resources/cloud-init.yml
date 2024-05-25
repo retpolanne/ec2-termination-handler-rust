@@ -1,0 +1,8 @@
+#cloud-config
+
+packages:
+    - python3-pip
+
+runcmd:
+    - [ pip3, install, -U, awscli ]
+    - [ aws, s3, cp, "s3://retpolanne-tmp-bucket/ec2-termination-handler-rust.deb", "/tmp/ec2-termination-handler-rust.deb"]
