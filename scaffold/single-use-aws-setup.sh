@@ -20,7 +20,6 @@
 
 export AWS_PAGER=""
 aws sts get-caller-identity || exit 1
-aws iam create-user --user-name github-ci
 
 OIDC_PROVIDER=$(aws iam create-open-id-connect-provider \
     --url "https://token.actions.githubusercontent.com" \
@@ -41,7 +40,7 @@ if [ "$OIDC_PROVIDER" != "" ]; then
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringEquals": {
-                    "token.actions.githubusercontent.com:sub": "repo: retpolanne/ec2-termination-handler-rust:ref:refs/heads/*",
+                    "token.actions.githubusercontent.com:sub": "repo:retpolanne/ec2-termination-handler-rust:ref:refs/heads/main",
                     "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
                 }
             }
@@ -53,3 +52,5 @@ EOF
     ROLE_ARN=$(aws iam create-role --role-name GitHubAction-AssumeRoleWithAction --assume-role-policy-document "file://$TEMP" | jq -r '.Role.Arn')
     gh variable set AWS_GH_ROLE_ARN --body "$ROLE_ARN"
 fi
+
+aws iam attach-role-policy --role-name GithubAction-AssumeRoleWithAction --policy-arn "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
