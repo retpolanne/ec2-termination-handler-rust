@@ -50,6 +50,6 @@ if [ "$OIDC_PROVIDER" != "" ]; then
 }
 EOF
 
-    aws iam create-role --role-name GitHubAction-AssumeRoleWithAction --assume-role-policy-document "file://$TEMP"
-    gh variable set AWS_OIDC_ARN --body "$OIDC_PROVIDER"
+    ROLE_ARN=$(aws iam create-role --role-name GitHubAction-AssumeRoleWithAction --assume-role-policy-document "file://$TEMP" | jq -r '.Role.Arn')
+    gh variable set AWS_GH_ROLE_ARN --body "$ROLE_ARN"
 fi
