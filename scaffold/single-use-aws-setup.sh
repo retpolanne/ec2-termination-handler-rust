@@ -54,3 +54,7 @@ EOF
 fi
 
 aws iam attach-role-policy --role-name GithubAction-AssumeRoleWithAction --policy-arn "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+aws ec2 create-security-group --description "GitHub CI" --group-name github-ci
+aws ec2 authorize-security-group-ingress \
+    --group-name github-ci \
+    --ip-permissions IpProtocol=tcp,FromPort=2020,ToPort=2020,IpRanges="[{CidrIp=$(curl -4 ifconfig.io)/32}]"

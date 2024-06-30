@@ -1,0 +1,19 @@
+#cloud-config
+users:
+  - name: anne
+    plain_text_passwd: anne
+    lock_passwd: false
+    groups:
+      - sudo
+    sudo:
+      - ALL=(ALL) NOPASSWD:ALL
+apt:
+  sources:
+    grafana:
+      source: "deb [signed-by=$KEY_FILE] https://apt.grafana.com stable main"
+      keyid: B53AE77BADB630A683046005963FA27710458545
+package_update: true
+package_upgrade: true
+
+packages:
+  - loki
